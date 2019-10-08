@@ -12,6 +12,14 @@
 
 float angulo = 0, seno, coseno;
 
+float px1 = 1.0;
+float py1 = 1.0;
+float pz1 = 1.0;
+
+float px2 = 3.0;
+float py2 = 3.0;
+float pz2 = 3.0;
+
 
 //Declaramoz la Matriz Piramide, que contiene los 5 vertices de la piramide.
 float piramide[4][5] =
@@ -25,6 +33,7 @@ float piramide[4][5] =
 
     { 1,     1,      1,       1,      1}, //cumpla la condicion de Matriz Cuadrada.
 };
+
 
 float rotaX[4][4] =   //Matriz Identidad de Rotacion en X.
 {
@@ -49,6 +58,13 @@ float rotaZ[4][4] =   //Matriz Identidad de Rotacion en Z.
     {0, 0,  0,  1},
 };
 
+float trasladaP[4][4] =   //Matriz Identidad de TRASLACION
+{
+    {1, 0,  0,  0},
+    {0, 1,  0,  0},
+    {0, 0,  1,  0},
+    {0, 0,  0,  1},
+};
 
 float mA[4][5] =   //Matriz DONDE se almacenan los resultados de la multiplicacion de matrices.
 {
@@ -125,8 +141,14 @@ void multiplicacion()
     }
 }
 
+
 void drawAxis()
 {
+        glColor3f(1,1,1);
+        glBegin(GL_LINES);
+        glVertex3f(px1,py1,pz1);
+        glVertex3f(px2,py2,pz2);
+        glEnd();
      //glShadeModel(GL_SMOOTH);
      //X axis in red
      glColor3f(1.0f,0.0f,0.0f);
@@ -147,8 +169,9 @@ void drawAxis()
        glVertex3f(0.0,0.0,3.0);
      glEnd();
 
-        glBegin(GL_POLYGON);
-        glColor3f(.6,.6,.6);//color del poligono
+
+        glBegin(GL_LINE_STRIP);
+        glColor3f(1,1,1);//color del poligono
         glVertex3d(piramide[0][0],piramide[1][0],piramide[2][0]); //punto1.
         glVertex3d(piramide[0][1],piramide[1][1],piramide[2][1]); //punto2.
         glVertex3d(piramide[0][2],piramide[1][2],piramide[2][2]); //punto3
@@ -157,32 +180,39 @@ void drawAxis()
 
 
         //Usamos GLTriangles y le damos los vertices a trazar (esta vez en 3 dimensiones)
-        glBegin(GL_TRIANGLES);
-
-        //Parte trasera
+        glBegin(GL_LINE_STRIP);
+        //Parte Trasera
         glColor3f(0.2, 0.658, 0.101);
         glVertex3d(piramide[0][4],piramide[1][4],piramide[2][4]);
         glVertex3d(piramide[0][0],piramide[1][0],piramide[2][0]);
         glVertex3d(piramide[0][1],piramide[1][1],piramide[2][1]);
-
+        glEnd();
+//
+        glBegin(GL_LINE_STRIP);
         //ParteIzquierda
         glColor3f(0.658, 0.101, 0.145);
         glVertex3d(piramide[0][4],piramide[1][4],piramide[2][4]);
         glVertex3d(piramide[0][1],piramide[1][1],piramide[2][1]);
         glVertex3d(piramide[0][2],piramide[1][2],piramide[2][2]);
-
+        glEnd();
+//
+        glBegin(GL_LINE_STRIP);
         //Parte delantera.
         glColor3f(.682,.6,.141);
         glVertex3d(piramide[0][4],piramide[1][4],piramide[2][4]);
         glVertex3d(piramide[0][2],piramide[1][2],piramide[2][2]);
         glVertex3d(piramide[0][3],piramide[1][3],piramide[2][3]);
+        glEnd();
 
+        glBegin(GL_LINE_STRIP);
         //Parte Derecha
         glColor3f(0.101, 0.301, 0.658);
         glVertex3d(piramide[0][4],piramide[1][4],piramide[2][4]);
         glVertex3d(piramide[0][3],piramide[1][3],piramide[2][3]);
-        glVertex3d(piramide[0][4],piramide[1][4],piramide[2][4]);
+        glVertex3d(piramide[0][0],piramide[1][0],piramide[2][0]);
         glEnd();
+
+
 
 
  }
@@ -195,9 +225,6 @@ void drawAxis()
 
 
     glutSwapBuffers();
-
-    angulo = 1;
-    angulo = (angulo/180)*M_PI;
 
     seno = sin(angulo);
     coseno = cos(angulo);
@@ -216,7 +243,7 @@ void drawAxis()
     rotaZ[1][0] = seno;
     rotaZ[1][1] = coseno;
 
-    multiplicacion();
+    //multiplicacion();
     usleep(5000);
 
     glFlush();
@@ -229,10 +256,35 @@ void init()
     glOrtho(-4, 4, -4, 4, -4, 4);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    gluLookAt(2,1,1,0,0,0,0,1,0);
+    gluLookAt(1.5,0,0,0,0,0,0,1,0);
     glClearColor(0,0,0,0);
 }
+void keyboard(unsigned char key, int x, int y)
+{
+  switch (key)
+  {
+    case GLUT_KEY_UP:
+    case 'W':
+    case 'w':
+      angulo= 1;
+      angulo = (angulo/180)*M_PI;
+      multiplicacion();
+      break;
 
+    case GLUT_KEY_DOWN:
+    case 'S':
+    case 's':
+      angulo=-1;
+      angulo = (angulo/180)*M_PI;
+      multiplicacion();
+      break;
+
+    case 27:   // escape
+      exit(0);
+      break;
+
+  }
+}
 int main(int argc, char **argv)
 {
     glutInit(&argc, argv);
@@ -243,6 +295,7 @@ int main(int argc, char **argv)
     init();
     glutDisplayFunc(display);
     glutIdleFunc(display);
+    glutKeyboardFunc(keyboard);
     glutMainLoop();
     return 0;
 }
